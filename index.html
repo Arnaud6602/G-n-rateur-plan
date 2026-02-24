@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Générateur Plan Domotique Tuya</title>
+<style>
+body{font-family:Arial;max-width:900px;margin:auto;background:#f5f7fb;padding:20px}
+h1,h2{color:#1e3c72}
+input,button{padding:8px;margin:5px}
+.card{background:white;padding:15px;border-radius:10px;margin:15px 0;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+pre{background:#111;color:#0f0;padding:15px;border-radius:10px;overflow:auto}
+</style>
+</head>
+
+<body>
+
+<h1>🔧 Générateur Plan Domotique Tuya</h1>
+
+<div class="card">
+<h2>1️⃣ Définir les pièces</h2>
+
+<div id="pieces"></div>
+
+<button onclick="addPiece()">➕ Ajouter une pièce</button>
+<button onclick="generate()">⚙️ Générer le plan complet</button>
+</div>
+
+<div class="card">
+<h2>📋 Plan généré</h2>
+<pre id="result"></pre>
+</div>
+
+<script>
+let count = 0;
+
+function addPiece(){
+  count++;
+  const div = document.createElement("div");
+  div.innerHTML = `
+    <b>Pièce ${count}</b> :
+    <input placeholder="Nom pièce" id="name${count}">
+    <input type="number" placeholder="Nb volets" id="v${count}" min="0">
+    <input type="number" placeholder="Nb baies" id="b${count}" min="0">
+    <br>
+  `;
+  document.getElementById("pieces").appendChild(div);
+}
+
+function generate(){
+  let txt = "";
+
+  txt += "SCÈNES TECHNIQUES (non visibles client)\n\n";
+
+  let idx = 1;
+
+  for(let i=1;i<=count;i++){
+    const name = document.getElementById("name"+i).value || "Pièce"+i;
+    const v = parseInt(document.getElementById("v"+i).value)||0;
+    const b = parseInt(document.getElementById("b"+i).value)||0;
+
+    if(v>0){
+      txt += `O${idx} — ${name} Ouvrir (${v} volets)\n`;
+      txt += `F${idx} — ${name} Fermer (${v} volets)\n\n`;
+      idx++;
+    }
+
+    if(b>0){
+      txt += `O${idx} — ${name} Baie Ouvrir (${b})\n`;
+      txt += `F${idx} — ${name} Baie Fermer (${b})\n\n`;
+      idx++;
+    }
+  }
+
+  txt += "\n============================\n\n";
+
+  txt += `SCÈNES CLIENT (boutons visibles)\n
+MODE — Normal
+MODE — Vacances
+MODE — Nuit
+MODE — Télé
+MODE — Je pars\n`;
+
+  txt += "\n============================\n\n";
+
+  txt += `MODE — Télé
+
+Scène visible :
+	• MODE — Télé
+
+Automatisation :
+	• Si scène MODE — Télé →
+`;
+
+  for(let i=1;i<idx;i++){
+    txt += `→ F${i}\n→ délai 5s\n`;
+  }
+
+  txt += "\n----------------------------\n\n";
+
+  txt += `MODE — Vacances
+
+Scène visible :
+	• MODE — Vacances
+
+Automatisations :
+	• Lever du soleil → `;
+
+  for(let i=1;i<idx;i++) txt += `O${i}, `;
+
+  txt += `\n	• Coucher du soleil → `;
+
+  for(let i=1;i<idx;i++) txt += `F${i}, `;
+
+  txt += `\n\n----------------------------\n\n`;
+
+  txt += `MODE — Normal
+
+Automatisations :
+	• Lever soleil → toutes scènes O
+	• Coucher soleil → toutes scènes F (sauf baie)\n\n`;
+
+  txt += `MODE — Nuit
+
+Scène visible :
+	• MODE — Nuit
+
+Automatisation :
+	• Si scène MODE — Nuit → fermer TOUS les volets + baie\n\n`;
+
+  txt += `MODE — Je pars
+
+Scène visible :
+	• MODE — Je pars
+
+Automatisation :
+	• Si scène MODE — Je pars → fermer TOUS les volets + baie\n`;
+
+  document.getElementById("result").textContent = txt;
+}
+</script>
+
+</body>
+</html>
