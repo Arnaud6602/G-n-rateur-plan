@@ -57,11 +57,6 @@ pre{
   font-size:14px;
 }
 
-.label{
-  font-size:13px;
-  color:#555;
-  margin-top:4px;
-}
 </style>
 </head>
 
@@ -100,6 +95,7 @@ function addPiece(){
 
 function generate(){
   let txt="";
+  let voletList="";
 
   txt+="SCÈNES TECHNIQUES (non visibles client)\n\n";
 
@@ -112,16 +108,29 @@ function generate(){
 
     if(v>0){
       txt+=`O${idx} — ${n} Ouvrir (${v} volets)\n`;
-      txt+=`F${idx} — ${n} Fermer (${v} volets)\n\n`;
+      txt+=`F${idx} — ${n} Fermer (${v} volets)\n`;
+      for(let j=1;j<=v;j++){
+        voletList+=`• Volet ${n} ${j}\n`;
+      }
+      txt+="\n";
       idx++;
     }
 
     if(b>0){
       txt+=`O${idx} — ${n} Baie Ouvrir (${b})\n`;
-      txt+=`F${idx} — ${n} Baie Fermer (${b})\n\n`;
+      txt+=`F${idx} — ${n} Baie Fermer (${b})\n`;
+      for(let j=1;j<=b;j++){
+        voletList+=`• Baie ${n}\n`;
+      }
+      txt+="\n";
       idx++;
     }
   }
+
+  txt+="==============================\n\n";
+
+  txt+="NOMMAGE DES ÉQUIPEMENTS DANS TUYA\n\n";
+  txt+=voletList+"\n";
 
   txt+="==============================\n\n";
 
@@ -132,36 +141,22 @@ function generate(){
 
   txt+="MODE — Normal\n\n";
   txt+="Automatisations :\n";
-  txt+="• Lever du soleil → ";
-
-  for(let i=1;i<idx;i++) txt+=`O${i}, `;
-  txt+="\n";
-
-  txt+="• Coucher du soleil → ";
-  for(let i=1;i<idx;i++) txt+=`F${i}, `;
-  txt+="(SAUF baie)\n\n";
+  txt+="• Lever du soleil → O1, O2, O3, ...\n";
+  txt+="• Coucher du soleil → F1, F2, F3, ... (sauf baie)\n\n";
 
   txt+="------------------------------\n\n";
 
   txt+="MODE — Vacances\n\n";
   txt+="Automatisations :\n";
-  txt+="• Lever du soleil → ";
-  for(let i=1;i<idx;i++) txt+=`O${i}, `;
-  txt+="\n";
-
-  txt+="• Coucher du soleil → ";
-  for(let i=1;i<idx;i++) txt+=`F${i}, `;
-  txt+="(TOUT fermer)\n\n";
+  txt+="• Lever du soleil → O1, O2, O3, ...\n";
+  txt+="• Coucher du soleil → F1, F2, F3, ... (tout fermer)\n\n";
 
   txt+="------------------------------\n\n";
 
   txt+="MODE — Nuit / Je pars\n\n";
   txt+="Scène visible : MODE — Nuit / Je pars\n";
   txt+="Automatisation :\n";
-  txt+="• Si scène activée → ";
-
-  for(let i=1;i<idx;i++) txt+=`F${i}, `;
-  txt+="(fermeture immédiate totale)\n";
+  txt+="• Si scène activée → F1, F2, F3, ... (fermeture immédiate totale)\n";
 
   document.getElementById("result").textContent=txt;
 }
