@@ -2,22 +2,75 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Générateur Plan Domotique Tuya</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Domotique Tuya</title>
+
 <style>
-body{font-family:Arial;max-width:900px;margin:auto;background:#f5f7fb;padding:20px}
-h1,h2{color:#1e3c72}
-input,button{padding:8px;margin:5px}
-.card{background:white;padding:15px;border-radius:10px;margin:15px 0;box-shadow:0 2px 6px rgba(0,0,0,.1)}
-pre{background:#111;color:#0f0;padding:15px;border-radius:10px;overflow:auto}
+body{
+  font-family: Arial, sans-serif;
+  background:#f4f6fb;
+  margin:0;
+  padding:15px;
+}
+
+h1,h2{color:#1e3c72;margin:5px 0;}
+
+.card{
+  background:white;
+  border-radius:12px;
+  padding:15px;
+  margin:15px 0;
+  box-shadow:0 3px 8px rgba(0,0,0,0.1);
+}
+
+.piece{
+  display:grid;
+  grid-template-columns: 1fr 80px 80px;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+input{
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  background:#1e3c72;
+  color:white;
+  font-size:16px;
+  margin-top:10px;
+}
+
+pre{
+  background:#111;
+  color:#0f0;
+  padding:15px;
+  border-radius:12px;
+  overflow:auto;
+  font-size:14px;
+}
+
+.label{
+  font-size:13px;
+  color:#555;
+  margin-top:4px;
+}
 </style>
 </head>
 
 <body>
 
-<h1>🔧 Générateur Plan Domotique Tuya</h1>
+<h1>🔧 Générateur Domotique Tuya</h1>
 
 <div class="card">
-<h2>1️⃣ Définir les pièces</h2>
+<h2>1️⃣ Configuration de la maison</h2>
 
 <div id="pieces"></div>
 
@@ -31,111 +84,86 @@ pre{background:#111;color:#0f0;padding:15px;border-radius:10px;overflow:auto}
 </div>
 
 <script>
-let count = 0;
+let count=0;
 
 function addPiece(){
   count++;
-  const div = document.createElement("div");
-  div.innerHTML = `
-    <b>Pièce ${count}</b> :
-    <input placeholder="Nom pièce" id="name${count}">
-    <input type="number" placeholder="Nb volets" id="v${count}" min="0">
-    <input type="number" placeholder="Nb baies" id="b${count}" min="0">
-    <br>
+  const div=document.createElement("div");
+  div.className="piece";
+  div.innerHTML=`
+    <input placeholder="Nom de la pièce" id="name${count}">
+    <input type="number" placeholder="Volets" id="v${count}" min="0">
+    <input type="number" placeholder="Baies" id="b${count}" min="0">
   `;
   document.getElementById("pieces").appendChild(div);
 }
 
 function generate(){
-  let txt = "";
+  let txt="";
 
-  txt += "SCÈNES TECHNIQUES (non visibles client)\n\n";
+  txt+="SCÈNES TECHNIQUES (non visibles client)\n\n";
 
-  let idx = 1;
+  let idx=1;
 
   for(let i=1;i<=count;i++){
-    const name = document.getElementById("name"+i).value || "Pièce"+i;
-    const v = parseInt(document.getElementById("v"+i).value)||0;
-    const b = parseInt(document.getElementById("b"+i).value)||0;
+    const n=document.getElementById("name"+i).value || "Pièce "+i;
+    const v=parseInt(document.getElementById("v"+i).value)||0;
+    const b=parseInt(document.getElementById("b"+i).value)||0;
 
     if(v>0){
-      txt += `O${idx} — ${name} Ouvrir (${v} volets)\n`;
-      txt += `F${idx} — ${name} Fermer (${v} volets)\n\n`;
+      txt+=`O${idx} — ${n} Ouvrir (${v} volets)\n`;
+      txt+=`F${idx} — ${n} Fermer (${v} volets)\n\n`;
       idx++;
     }
 
     if(b>0){
-      txt += `O${idx} — ${name} Baie Ouvrir (${b})\n`;
-      txt += `F${idx} — ${name} Baie Fermer (${b})\n\n`;
+      txt+=`O${idx} — ${n} Baie Ouvrir (${b})\n`;
+      txt+=`F${idx} — ${n} Baie Fermer (${b})\n\n`;
       idx++;
     }
   }
 
-  txt += "\n============================\n\n";
+  txt+="==============================\n\n";
 
-  txt += `SCÈNES CLIENT (boutons visibles)\n
-MODE — Normal
-MODE — Vacances
-MODE — Nuit
-MODE — Télé
-MODE — Je pars\n`;
+  txt+="SCÈNES CLIENT (boutons visibles)\n\n";
+  txt+="MODE — Normal\nMODE — Vacances\nMODE — Nuit / Je pars\n\n";
 
-  txt += "\n============================\n\n";
+  txt+="==============================\n\n";
 
-  txt += `MODE — Télé
+  txt+="MODE — Normal\n\n";
+  txt+="Automatisations :\n";
+  txt+="• Lever du soleil → ";
 
-Scène visible :
-	• MODE — Télé
+  for(let i=1;i<idx;i++) txt+=`O${i}, `;
+  txt+="\n";
 
-Automatisation :
-	• Si scène MODE — Télé →
-`;
+  txt+="• Coucher du soleil → ";
+  for(let i=1;i<idx;i++) txt+=`F${i}, `;
+  txt+="(SAUF baie)\n\n";
 
-  for(let i=1;i<idx;i++){
-    txt += `→ F${i}\n→ délai 5s\n`;
-  }
+  txt+="------------------------------\n\n";
 
-  txt += "\n----------------------------\n\n";
+  txt+="MODE — Vacances\n\n";
+  txt+="Automatisations :\n";
+  txt+="• Lever du soleil → ";
+  for(let i=1;i<idx;i++) txt+=`O${i}, `;
+  txt+="\n";
 
-  txt += `MODE — Vacances
+  txt+="• Coucher du soleil → ";
+  for(let i=1;i<idx;i++) txt+=`F${i}, `;
+  txt+="(TOUT fermer)\n\n";
 
-Scène visible :
-	• MODE — Vacances
+  txt+="------------------------------\n\n";
 
-Automatisations :
-	• Lever du soleil → `;
+  txt+="MODE — Nuit / Je pars\n\n";
+  txt+="Scène visible : MODE — Nuit / Je pars\n";
+  txt+="Automatisation :\n";
+  txt+="• Si scène activée → ";
 
-  for(let i=1;i<idx;i++) txt += `O${i}, `;
+  for(let i=1;i<idx;i++) txt+=`F${i}, `;
+  txt+="(fermeture immédiate totale)\n";
 
-  txt += `\n	• Coucher du soleil → `;
-
-  for(let i=1;i<idx;i++) txt += `F${i}, `;
-
-  txt += `\n\n----------------------------\n\n`;
-
-  txt += `MODE — Normal
-
-Automatisations :
-	• Lever soleil → toutes scènes O
-	• Coucher soleil → toutes scènes F (sauf baie)\n\n`;
-
-  txt += `MODE — Nuit
-
-Scène visible :
-	• MODE — Nuit
-
-Automatisation :
-	• Si scène MODE — Nuit → fermer TOUS les volets + baie\n\n`;
-
-  txt += `MODE — Je pars
-
-Scène visible :
-	• MODE — Je pars
-
-Automatisation :
-	• Si scène MODE — Je pars → fermer TOUS les volets + baie\n`;
-
-  document.getElementById("result").textContent = txt;
+  document.getElementById("result").textContent=txt;
 }
 </script>
 
