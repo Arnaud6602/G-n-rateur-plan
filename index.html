@@ -79,7 +79,7 @@ function addPiece(){
   const div=document.createElement("div");
   div.className="piece";
   div.innerHTML=`
-    <input placeholder="Nom de la pièce" id="name${count}">
+    <input placeholder="Nom de la pièce (ex: Cuisine)" id="name${count}">
     <input type="number" placeholder="Volets" id="v${count}" min="0">
     <input type="number" placeholder="Baies" id="b${count}" min="0">
   `;
@@ -89,39 +89,48 @@ function addPiece(){
 function generate(){
   let txt="";
   let openNormal=[], closeNormal=[], openVacances=[], closeVacances=[], closeAll=[];
-  let otCount=1, fvCount=1, obvCount=1, fbvCount=1;
+  
+  let voletsCount = {}, baiesCount = {}; // Compteur pour chaque pièce pour numéroter correctement
 
   txt+="SCÈNES TECHNIQUES (non visibles client)\n\n";
 
   for(let i=1;i<=count;i++){
-    const name=document.getElementById("name"+i).value || "Piece"+i;
+    const name=document.getElementById("name"+i).value.trim() || "Piece"+i;
+    const initial = name[0].toUpperCase(); // Initiale pour abréviation
     const v=parseInt(document.getElementById("v"+i).value)||0;
     const b=parseInt(document.getElementById("b"+i).value)||0;
 
+    voletsCount[initial] = voletsCount[initial] || 1;
+    baiesCount[initial] = baiesCount[initial] || 1;
+
     // Volets
     for(let j=1;j<=v;j++){
-      txt+=`OT${otCount} — Ouvrir ${name} Volet ${j}\n`;
-      txt+=`FV${fvCount} — Fermer ${name} Volet ${j}\n\n`;
+      const oc = `O${initial}${voletsCount[initial]}`;
+      const fc = `F${initial}${voletsCount[initial]}`;
+      txt+=`${oc} — Ouvrir ${name} Volet ${j}\n`;
+      txt+=`${fc} — Fermer ${name} Volet ${j}\n\n`;
 
-      openNormal.push(`OT${otCount}`);
-      closeNormal.push(`FV${fvCount}`);
-      openVacances.push(`OT${otCount}`);
-      closeVacances.push(`FV${fvCount}`);
-      closeAll.push(`FV${fvCount}`);
+      openNormal.push(oc);
+      closeNormal.push(fc);
+      openVacances.push(oc);
+      closeVacances.push(fc);
+      closeAll.push(fc);
 
-      otCount++; fvCount++;
+      voletsCount[initial]++;
     }
 
     // Baies
     for(let k=1;k<=b;k++){
-      txt+=`OBV${obvCount} — Ouvrir ${name} Baie\n`;
-      txt+=`FBV${fbvCount} — Fermer ${name} Baie\n\n`;
+      const obv = `OBV${baiesCount[initial]}`;
+      const fbv = `FBV${baiesCount[initial]}`;
+      txt+=`${obv} — Ouvrir ${name} Baie\n`;
+      txt+=`${fbv} — Fermer ${name} Baie\n\n`;
 
-      openVacances.push(`OBV${obvCount}`);
-      closeVacances.push(`FBV${fbvCount}`);
-      closeAll.push(`FBV${fbvCount}`);
+      openVacances.push(obv);
+      closeVacances.push(fbv);
+      closeAll.push(fbv);
 
-      obvCount++; fbvCount++;
+      baiesCount[initial]++;
     }
   }
 
@@ -129,7 +138,7 @@ function generate(){
 
   txt+="NOMMAGE DES ÉQUIPEMENTS DANS TUYA\n\n";
   for(let i=1;i<=count;i++){
-    const name=document.getElementById("name"+i).value || "Piece"+i;
+    const name=document.getElementById("name"+i).value.trim() || "Piece"+i;
     const v=parseInt(document.getElementById("v"+i).value)||0;
     const b=parseInt(document.getElementById("b"+i).value)||0;
     for(let j=1;j<=v;j++){
@@ -165,9 +174,8 @@ function generate(){
   // MODE NUIT / JE PARS
   txt+="MODE — Nuit / Je pars\n\n";
   txt+="Scène visible : MODE — Nuit / Je pars\n\n";
-  txt+="Automatisations :\n";
-  txt+=`• Si scène activée → ${closeAll.join(", ")} (fermeture immédiate totale, volets + baies)\n`;
-  txt+="• À 00:05 → Activer MODE — Normal (retour automatique le lendemain)\n";
+  txt+="• Activez cette scène → ferme immédiatement tous les volets et baies\n";
+  txt+="• Retour en Mode Normal le lendemain automatiquement (via levé du soleil)\n";
 
   document.getElementById("result").textContent=txt;
 }
