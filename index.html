@@ -88,15 +88,10 @@ function addPiece(){
 
 function generate(){
   let txt="";
-  let openNormal=[];
-  let closeNormal=[];
-  let closeAll=[];
-  let openVacances=[];
-  let closeVacances=[];
+  let openNormal=[], closeNormal=[], openVacances=[], closeVacances=[], closeAll=[];
+  let otCount=1, fvCount=1, obvCount=1, fbvCount=1;
 
   txt+="SCÈNES TECHNIQUES (non visibles client)\n\n";
-
-  let id=1;
 
   for(let i=1;i<=count;i++){
     const name=document.getElementById("name"+i).value || "Piece"+i;
@@ -105,28 +100,28 @@ function generate(){
 
     // Volets
     for(let j=1;j<=v;j++){
-      const openName=`O${id} — ${name} Volet ${j}`;
-      const closeName=`F${id} — ${name} Volet ${j}`;
-      txt+=`${openName}\n${closeName}\n\n`;
+      txt+=`OT${otCount} — Ouvrir ${name} Volet ${j}\n`;
+      txt+=`FV${fvCount} — Fermer ${name} Volet ${j}\n\n`;
 
-      openNormal.push(`O${id}`);
-      closeNormal.push(`F${id}`);
-      closeAll.push(`F${id}`);
-      openVacances.push(`O${id}`);
-      closeVacances.push(`F${id}`);
-      id++;
+      openNormal.push(`OT${otCount}`);
+      closeNormal.push(`FV${fvCount}`);
+      openVacances.push(`OT${otCount}`);
+      closeVacances.push(`FV${fvCount}`);
+      closeAll.push(`FV${fvCount}`);
+
+      otCount++; fvCount++;
     }
 
     // Baies
     for(let k=1;k<=b;k++){
-      const openBaie=`OBV${id} — ${name} Baie`;
-      const closeBaie=`FBV${id} — ${name} Baie`;
-      txt+=`${openBaie}\n${closeBaie}\n\n`;
+      txt+=`OBV${obvCount} — Ouvrir ${name} Baie\n`;
+      txt+=`FBV${fbvCount} — Fermer ${name} Baie\n\n`;
 
-      openVacances.push(`OBV${id}`);
-      closeVacances.push(`FBV${id}`);
-      closeAll.push(`FBV${id}`);
-      id++;
+      openVacances.push(`OBV${obvCount}`);
+      closeVacances.push(`FBV${fbvCount}`);
+      closeAll.push(`FBV${fbvCount}`);
+
+      obvCount++; fbvCount++;
     }
   }
 
@@ -149,14 +144,13 @@ function generate(){
 
   txt+="SCÈNES CLIENT (boutons visibles)\n\n";
   txt+="MODE — Normal\nMODE — Vacances\nMODE — Nuit / Je pars\n\n";
-
   txt+="==============================\n\n";
 
   // MODE NORMAL
   txt+="MODE — Normal\n\n";
   txt+="Automatisations :\n";
   txt+=`• Lever du soleil → ${openNormal.join(", ")}\n`;
-  txt+=`• Coucher du soleil → ${closeNormal.join(", ")} (sauf baie)\n\n`;
+  txt+=`• Coucher du soleil → ${closeNormal.join(", ")} (sauf baies)\n\n`;
 
   txt+="------------------------------\n\n";
 
@@ -172,7 +166,7 @@ function generate(){
   txt+="MODE — Nuit / Je pars\n\n";
   txt+="Scène visible : MODE — Nuit / Je pars\n\n";
   txt+="Automatisations :\n";
-  txt+=`• Si scène activée → ${closeAll.join(", ")} (fermeture immédiate totale, volets + baie)\n`;
+  txt+=`• Si scène activée → ${closeAll.join(", ")} (fermeture immédiate totale, volets + baies)\n`;
   txt+="• À 00:05 → Activer MODE — Normal (retour automatique le lendemain)\n";
 
   document.getElementById("result").textContent=txt;
