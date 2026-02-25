@@ -12,9 +12,7 @@ body{
   margin:0;
   padding:15px;
 }
-
 h1,h2{color:#1e3c72;margin:5px 0;}
-
 .card{
   background:white;
   border-radius:12px;
@@ -22,21 +20,18 @@ h1,h2{color:#1e3c72;margin:5px 0;}
   margin:15px 0;
   box-shadow:0 3px 8px rgba(0,0,0,0.1);
 }
-
 .piece{
   display:grid;
   grid-template-columns: 1fr 80px 80px;
   gap:10px;
   margin-bottom:10px;
 }
-
 input{
   padding:10px;
   border-radius:8px;
   border:1px solid #ccc;
   font-size:16px;
 }
-
 button{
   width:100%;
   padding:12px;
@@ -47,7 +42,6 @@ button{
   font-size:16px;
   margin-top:10px;
 }
-
 pre{
   background:#111;
   color:#0f0;
@@ -59,7 +53,6 @@ pre{
 }
 </style>
 </head>
-
 <body>
 
 <h1>🔧 Générateur Plan Domotique Tuya</h1>
@@ -94,36 +87,44 @@ function addPiece(){
 }
 
 function generate(){
-
   let txt="";
   let openNormal=[];
   let closeNormal=[];
   let closeAll=[];
+  let openVacances=[];
+  let closeVacances=[];
 
   txt+="SCÈNES TECHNIQUES (non visibles client)\n\n";
 
   let id=1;
 
   for(let i=1;i<=count;i++){
-
     const name=document.getElementById("name"+i).value || "Piece"+i;
     const v=parseInt(document.getElementById("v"+i).value)||0;
     const b=parseInt(document.getElementById("b"+i).value)||0;
 
+    // Volets
     for(let j=1;j<=v;j++){
-      txt+=`OC${id} — Ouvrir ${name} Volet ${j}\n`;
-      txt+=`FC${id} — Fermer ${name} Volet ${j}\n\n`;
+      const openName=`O${id} — ${name} Volet ${j}`;
+      const closeName=`F${id} — ${name} Volet ${j}`;
+      txt+=`${openName}\n${closeName}\n\n`;
 
-      openNormal.push(`OC${id}`);
-      closeNormal.push(`FC${id}`);
-      closeAll.push(`FC${id}`);
+      openNormal.push(`O${id}`);
+      closeNormal.push(`F${id}`);
+      closeAll.push(`F${id}`);
+      openVacances.push(`O${id}`);
+      closeVacances.push(`F${id}`);
       id++;
     }
 
+    // Baies
     for(let k=1;k<=b;k++){
-      txt+=`OBV${id} — Ouvrir ${name} Baie\n`;
-      txt+=`FBV${id} — Fermer ${name} Baie\n\n`;
+      const openBaie=`OBV${id} — ${name} Baie`;
+      const closeBaie=`FBV${id} — ${name} Baie`;
+      txt+=`${openBaie}\n${closeBaie}\n\n`;
 
+      openVacances.push(`OBV${id}`);
+      closeVacances.push(`FBV${id}`);
       closeAll.push(`FBV${id}`);
       id++;
     }
@@ -131,32 +132,48 @@ function generate(){
 
   txt+="==============================\n\n";
 
+  txt+="NOMMAGE DES ÉQUIPEMENTS DANS TUYA\n\n";
+  for(let i=1;i<=count;i++){
+    const name=document.getElementById("name"+i).value || "Piece"+i;
+    const v=parseInt(document.getElementById("v"+i).value)||0;
+    const b=parseInt(document.getElementById("b"+i).value)||0;
+    for(let j=1;j<=v;j++){
+      txt+=`• ${name} Volet ${j}\n`;
+    }
+    for(let k=1;k<=b;k++){
+      txt+=`• ${name} Baie ${k}\n`;
+    }
+  }
+
+  txt+="\n==============================\n\n";
+
   txt+="SCÈNES CLIENT (boutons visibles)\n\n";
-  txt+="MODE — Normal\n";
-  txt+="MODE — Vacances\n";
-  txt+="MODE — Je pars\n\n";
+  txt+="MODE — Normal\nMODE — Vacances\nMODE — Nuit / Je pars\n\n";
 
   txt+="==============================\n\n";
 
+  // MODE NORMAL
   txt+="MODE — Normal\n\n";
   txt+="Automatisations :\n";
   txt+=`• Lever du soleil → ${openNormal.join(", ")}\n`;
-  txt+=`• Coucher du soleil → ${closeNormal.join(", ")}\n\n`;
+  txt+=`• Coucher du soleil → ${closeNormal.join(", ")} (sauf baie)\n\n`;
 
   txt+="------------------------------\n\n";
 
+  // MODE VACANCES
   txt+="MODE — Vacances\n\n";
   txt+="Automatisations :\n";
-  txt+=`• Lever du soleil → ${openNormal.join(", ")}\n`;
-  txt+=`• Coucher du soleil → ${closeAll.join(", ")}\n\n`;
+  txt+=`• Lever du soleil → ${openVacances.join(", ")}\n`;
+  txt+=`• Coucher du soleil → ${closeVacances.join(", ")}\n\n`;
 
   txt+="------------------------------\n\n";
 
-  txt+="MODE — Je pars\n\n";
-  txt+="Scène visible : MODE — Je pars\n\n";
+  // MODE NUIT / JE PARS
+  txt+="MODE — Nuit / Je pars\n\n";
+  txt+="Scène visible : MODE — Nuit / Je pars\n\n";
   txt+="Automatisations :\n";
-  txt+=`• Si scène activée → ${closeAll.join(", ")} (fermeture immédiate totale)\n`;
-  txt+="• À 00:05 → Activer MODE — Normal (retour automatique)\n";
+  txt+=`• Si scène activée → ${closeAll.join(", ")} (fermeture immédiate totale, volets + baie)\n`;
+  txt+="• À 00:05 → Activer MODE — Normal (retour automatique le lendemain)\n";
 
   document.getElementById("result").textContent=txt;
 }
