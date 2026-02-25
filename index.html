@@ -56,7 +56,6 @@ pre{
   overflow:auto;
   font-size:14px;
 }
-
 </style>
 </head>
 
@@ -120,7 +119,7 @@ function generate(){
       txt+=`O${idx} — ${n} Baie Ouvrir (${b})\n`;
       txt+=`F${idx} — ${n} Baie Fermer (${b})\n`;
       for(let j=1;j<=b;j++){
-        voletList+=`• Baie ${n}\n`;
+        voletList+=`• Baie ${n} ${j}\n`;
       }
       txt+="\n";
       idx++;
@@ -135,7 +134,7 @@ function generate(){
   txt+="==============================\n\n";
 
   txt+="SCÈNES CLIENT (boutons visibles)\n\n";
-  txt+="MODE — Normal\nMODE — Vacances\nMODE — Nuit / Je pars\n\n";
+  txt+="MODE — Normal\nMODE — Vacances\nMODE — Je pars\n\n";
 
   txt+="==============================\n\n";
 
@@ -153,10 +152,11 @@ function generate(){
 
   txt+="------------------------------\n\n";
 
-  txt+="MODE — Nuit / Je pars\n\n";
-  txt+="Scène visible : MODE — Nuit / Je pars\n";
-  txt+="Automatisation :\n";
+  txt+="MODE — Je pars\n\n";
+  txt+="Scène visible : MODE — Je pars\n\n";
+  txt+="Automatisations :\n";
   txt+="• Si scène activée → F1, F2, F3, ... (fermeture immédiate totale)\n";
+  txt+="• À 00:05 → Activer MODE — Normal (retour automatique pour le lendemain)\n";
 
   document.getElementById("result").textContent=txt;
 }
