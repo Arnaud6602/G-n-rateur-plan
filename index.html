@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Générateur Plan Domotique Tuya</title>
+<title>Générateur Plan Domotique Tuya — Modes Intelligents</title>
 
 <style>
 body{
@@ -55,7 +55,7 @@ pre{
 </head>
 <body>
 
-<h1>🔧 Générateur Plan Domotique Tuya</h1>
+<h1>🏠 Générateur Plan Domotique Tuya — Modes Pro</h1>
 
 <div class="card">
 <h2>1️⃣ Configuration de la maison</h2>
@@ -63,11 +63,11 @@ pre{
 <div id="pieces"></div>
 
 <button onclick="addPiece()">➕ Ajouter une pièce</button>
-<button onclick="generate()">⚙️ Générer le plan complet</button>
+<button onclick="generate()">⚙️ Générer le plan domotique</button>
 </div>
 
 <div class="card">
-<h2>📋 Plan généré</h2>
+<h2>📋 Plan généré (clé en main)</h2>
 <pre id="result"></pre>
 </div>
 
@@ -88,94 +88,88 @@ function addPiece(){
 
 function generate(){
   let txt="";
-  let openNormal=[], closeNormal=[], openVacances=[], closeVacances=[], closeAll=[];
-  
-  let voletsCount = {}, baiesCount = {}; // Compteur pour chaque pièce pour numéroter correctement
+  let openAll=[], closeAll=[];
+  let voletsCount={}, baiesCount={};
 
-  txt+="SCÈNES TECHNIQUES (non visibles client)\n\n";
+  txt+="STRUCTURE DOMOTIQUE PROFESSIONNELLE\n";
+  txt+="====================================\n\n";
 
   for(let i=1;i<=count;i++){
     const name=document.getElementById("name"+i).value.trim() || "Piece"+i;
-    const initial = name[0].toUpperCase(); // Initiale pour abréviation
+    const initial=name[0].toUpperCase();
     const v=parseInt(document.getElementById("v"+i).value)||0;
     const b=parseInt(document.getElementById("b"+i).value)||0;
 
-    voletsCount[initial] = voletsCount[initial] || 1;
-    baiesCount[initial] = baiesCount[initial] || 1;
+    voletsCount[initial]=voletsCount[initial]||1;
+    baiesCount[initial]=baiesCount[initial]||1;
 
-    // Volets
     for(let j=1;j<=v;j++){
-      const oc = `O${initial}${voletsCount[initial]}`;
-      const fc = `F${initial}${voletsCount[initial]}`;
-      txt+=`${oc} — Ouvrir ${name} Volet ${j}\n`;
-      txt+=`${fc} — Fermer ${name} Volet ${j}\n\n`;
-
-      openNormal.push(oc);
-      closeNormal.push(fc);
-      openVacances.push(oc);
-      closeVacances.push(fc);
-      closeAll.push(fc);
-
+      const o=`O${initial}${voletsCount[initial]}`;
+      const f=`F${initial}${voletsCount[initial]}`;
+      txt+=`${o} → Ouvrir ${name} volet ${j}\n`;
+      txt+=`${f} → Fermer ${name} volet ${j}\n`;
+      openAll.push(o);
+      closeAll.push(f);
       voletsCount[initial]++;
     }
 
-    // Baies
     for(let k=1;k<=b;k++){
-      const obv = `OBV${baiesCount[initial]}`;
-      const fbv = `FBV${baiesCount[initial]}`;
-      txt+=`${obv} — Ouvrir ${name} Baie\n`;
-      txt+=`${fbv} — Fermer ${name} Baie\n\n`;
-
-      openVacances.push(obv);
-      closeVacances.push(fbv);
-      closeAll.push(fbv);
-
+      const ob=`OBV${baiesCount[initial]}`;
+      const fb=`FBV${baiesCount[initial]}`;
+      txt+=`${ob} → Ouvrir ${name} baie ${k}\n`;
+      txt+=`${fb} → Fermer ${name} baie ${k}\n`;
+      openAll.push(ob);
+      closeAll.push(fb);
       baiesCount[initial]++;
     }
+
+    txt+="\n";
   }
 
-  txt+="==============================\n\n";
+  txt+="====================================\n\n";
+  txt+="ARCHITECTURE DES MODES\n\n";
 
-  txt+="NOMMAGE DES ÉQUIPEMENTS DANS TUYA\n\n";
-  for(let i=1;i<=count;i++){
-    const name=document.getElementById("name"+i).value.trim() || "Piece"+i;
-    const v=parseInt(document.getElementById("v"+i).value)||0;
-    const b=parseInt(document.getElementById("b"+i).value)||0;
-    for(let j=1;j<=v;j++){
-      txt+=`• ${name} Volet ${j}\n`;
-    }
-    for(let k=1;k<=b;k++){
-      txt+=`• ${name} Baie ${k}\n`;
-    }
-  }
+  txt+="MODE 1 — MANUEL\n";
+  txt+="→ Aucune automatisation active\n";
+  txt+="→ Commande uniquement par boutons\n\n";
 
-  txt+="\n==============================\n\n";
+  txt+="MODE 2 — SEMAINE (Lundi → Vendredi)\n";
+  txt+="→ Lever du soleil → Ouverture\n";
+  txt+="→ Coucher du soleil → Fermeture\n\n";
 
-  txt+="SCÈNES CLIENT (boutons visibles)\n\n";
-  txt+="MODE — Normal\nMODE — Vacances\nMODE — Nuit / Je pars\n\n";
-  txt+="==============================\n\n";
+  txt+="MODE 3 — WEEK-END (Samedi & Dimanche)\n";
+  txt+="→ Ouverture plus tardive\n";
+  txt+="→ Fermeture normale\n\n";
 
-  // MODE NORMAL
-  txt+="MODE — Normal\n\n";
-  txt+="Automatisations :\n";
-  txt+=`• Lever du soleil → ${openNormal.join(", ")}\n`;
-  txt+=`• Coucher du soleil → ${closeNormal.join(", ")} (sauf baies)\n\n`;
+  txt+="MODE 4 — VACANCES\n";
+  txt+="→ Heures fixes programmées\n";
+  txt+="→ Variation aléatoire ±15 min\n\n";
 
-  txt+="------------------------------\n\n";
+  txt+="MODE 5 — TOUT OUVRIR\n";
+  txt+=`→ ${openAll.join(", ")}\n\n`;
 
-  // MODE VACANCES
-  txt+="MODE — Vacances\n\n";
-  txt+="Automatisations :\n";
-  txt+=`• Lever du soleil → ${openVacances.join(", ")}\n`;
-  txt+=`• Coucher du soleil → ${closeVacances.join(", ")}\n\n`;
+  txt+="MODE 6 — TOUT FERMER\n";
+  txt+=`→ ${closeAll.join(", ")}\n\n`;
 
-  txt+="------------------------------\n\n";
+  txt+="====================================\n\n";
+  txt+="RÈGLE CRITIQUE\n";
+  txt+="→ UN SEUL MODE ACTIF À LA FOIS\n";
+  txt+="→ Variable globale Tuya : MODE\n\n";
 
-  // MODE NUIT / JE PARS
-  txt+="MODE — Nuit / Je pars\n\n";
-  txt+="Scène visible : MODE — Nuit / Je pars\n\n";
-  txt+="• Activez cette scène → ferme immédiatement tous les volets et baies\n";
-  txt+="• Retour en Mode Normal le lendemain automatiquement (via levé du soleil)\n";
+  txt+="Valeurs possibles :\n";
+  txt+="MANUEL / SEMAINE / WEEKEND / VACANCES\n\n";
+
+  txt+="Toutes les automatisations doivent commencer par :\n";
+  txt+="SI MODE = ...\n\n";
+
+  txt+="====================================\n\n";
+  txt+="BOUTONS CLIENT À CRÉER\n\n";
+  txt+="• Mode Manuel\n";
+  txt+="• Mode Semaine\n";
+  txt+="• Mode Week-end\n";
+  txt+="• Mode Vacances\n";
+  txt+="• Tout Ouvrir\n";
+  txt+="• Tout Fermer\n";
 
   document.getElementById("result").textContent=txt;
 }
